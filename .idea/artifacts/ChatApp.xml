@@ -1,0 +1,68 @@
+<component name="ArtifactManager">
+  <artifact type="javafx" name="ChatApp">
+    <output-path>$PROJECT_DIR$/out/artifacts/ChatApp</output-path>
+    <root id="root">
+      <element id="archive" name="ChatApp.jar">
+        <element id="module-output" name="ChatApp" />
+      </element>
+      <element id="library" level="project" name="Maven: javax.transaction:jta:1.1" />
+      <element id="library" level="project" name="Maven: mysql:mysql-connector-java:5.1.40" />
+      <element id="library" level="project" name="Maven: org.hibernate:hibernate-annotations:3.5.6-Final" />
+      <element id="library" level="project" name="Maven: org.hibernate:hibernate-commons-annotations:3.2.0.Final" />
+      <element id="library" level="project" name="Maven: org.slf4j:slf4j-api:1.5.8" />
+      <element id="library" level="project" name="Maven: org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final" />
+      <element id="library" level="project" name="Maven: org.hibernate:hibernate-core:4.3.11.Final" />
+      <element id="library" level="project" name="Maven: org.jboss.logging:jboss-logging:3.1.3.GA" />
+      <element id="library" level="project" name="Maven: org.jboss.logging:jboss-logging-annotations:1.2.0.Beta1" />
+      <element id="library" level="project" name="Maven: org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec:1.0.0.Final" />
+      <element id="library" level="project" name="Maven: dom4j:dom4j:1.6.1" />
+      <element id="library" level="project" name="Maven: xml-apis:xml-apis:1.0.b2" />
+      <element id="library" level="project" name="Maven: org.hibernate.common:hibernate-commons-annotations:4.0.5.Final" />
+      <element id="library" level="project" name="Maven: org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final" />
+      <element id="library" level="project" name="Maven: org.javassist:javassist:3.18.1-GA" />
+      <element id="library" level="project" name="Maven: antlr:antlr:2.7.7" />
+      <element id="library" level="project" name="Maven: org.jboss:jandex:1.1.0.Final" />
+      <element id="library" level="project" name="Maven: org.hibernate:hibernate-validator:5.1.3.Final" />
+      <element id="library" level="project" name="Maven: javax.validation:validation-api:1.1.0.Final" />
+      <element id="library" level="project" name="Maven: com.fasterxml:classmate:1.0.0" />
+      <element id="library" level="project" name="Maven: org.springframework:spring-context:4.3.6.RELEASE" />
+      <element id="library" level="project" name="Maven: org.springframework:spring-aop:4.3.6.RELEASE" />
+      <element id="library" level="project" name="Maven: org.springframework:spring-beans:4.3.6.RELEASE" />
+      <element id="library" level="project" name="Maven: org.springframework:spring-core:4.3.6.RELEASE" />
+      <element id="library" level="project" name="Maven: commons-logging:commons-logging:1.2" />
+      <element id="library" level="project" name="Maven: org.springframework:spring-expression:4.3.6.RELEASE" />
+      <element id="library" level="project" name="Maven: org.springframework:spring-context:4.2.1.RELEASE" />
+      <element id="library" level="project" name="Maven: org.springframework:spring-aop:4.2.1.RELEASE" />
+      <element id="library" level="project" name="Maven: org.springframework:spring-beans:4.2.1.RELEASE" />
+      <element id="library" level="project" name="Maven: org.springframework:spring-core:4.2.1.RELEASE" />
+      <element id="library" level="project" name="Maven: org.springframework:spring-expression:4.2.1.RELEASE" />
+      <element id="library" level="project" name="Maven: org.springframework:spring-webmvc:4.2.1.RELEASE" />
+      <element id="library" level="project" name="Maven: org.springframework:spring-web:4.2.1.RELEASE" />
+      <element id="library" level="project" name="Maven: org.springframework.security:spring-security-core:4.2.1.RELEASE" />
+      <element id="library" level="project" name="Maven: aopalliance:aopalliance:1.0" />
+      <element id="library" level="project" name="Maven: org.springframework.security:spring-security-taglibs:4.2.1.RELEASE" />
+      <element id="library" level="project" name="Maven: org.springframework.security:spring-security-acl:4.2.1.RELEASE" />
+      <element id="library" level="project" name="Maven: org.springframework:spring-jdbc:4.3.5.RELEASE" />
+      <element id="library" level="project" name="Maven: org.springframework:spring-tx:4.3.5.RELEASE" />
+      <element id="library" level="project" name="Maven: org.springframework.security:spring-security-web:4.2.1.RELEASE" />
+      <element id="library" level="project" name="Maven: org.springframework.security:spring-security-config:4.2.1.RELEASE" />
+      <element id="library" level="project" name="Maven: org.apache.taglibs:taglibs-standard-jstlel:1.2.5" />
+      <element id="library" level="project" name="Maven: org.apache.taglibs:taglibs-standard-spec:1.2.5" />
+      <element id="library" level="project" name="Maven: org.apache.taglibs:taglibs-standard-impl:1.2.5" />
+      <element id="library" level="project" name="Maven: jstl:jstl:1.2" />
+      <element id="library" level="project" name="Maven: org.hibernate:ejb3-persistence:1.0.1.GA" />
+      <element id="library" level="project" name="Maven: org.hibernate:hibernate-annotations:3.3.1.GA" />
+      <element id="library" level="project" name="Maven: org.hibernate:hibernate:3.2.6.ga" />
+      <element id="library" level="project" name="Maven: net.sf.ehcache:ehcache:1.2.3" />
+      <element id="library" level="project" name="Maven: asm:asm-attrs:1.5.3" />
+      <element id="library" level="project" name="Maven: antlr:antlr:2.7.6" />
+      <element id="library" level="project" name="Maven: cglib:cglib:2.1_3" />
+      <element id="library" level="project" name="Maven: asm:asm:1.5.3" />
+      <element id="library" level="project" name="Maven: commons-collections:commons-collections:2.1.1" />
+      <element id="library" level="project" name="Maven: org.hibernate:hibernate-commons-annotations:3.0.0.ga" />
+      <element id="library" level="project" name="Maven: commons-logging:commons-logging:1.0.4" />
+      <element id="library" level="project" name="Maven: mysql:mysql-connector-java:5.1.10" />
+      <element id="library" level="project" name="Maven: org.jetbrains:annotations-java5:15.0" />
+    </root>
+  </artifact>
+</component>
