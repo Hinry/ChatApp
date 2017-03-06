@@ -6,4 +6,5 @@ package hrininlab;
 public interface MessageListener {
 
     void addMessage(Message string);
+    void addSystemMessage(SystemMessage message);
 }

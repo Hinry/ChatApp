@@ -9,6 +9,7 @@ import java.net.Socket;
 import java.io.*;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.List;
 
 /**
  * Класс-клиент чат-сервера. Работает в консоли. Командой с консоли shutdown посылаем сервер в оффлайн
@@ -20,7 +21,7 @@ public class ChatClient implements Runnable {
     // буферизированный читатель пользовательского ввода с консоли
     MessageListener listener;
     User user;
-    private ObservableList<User> usersOnline = FXCollections.observableArrayList();
+    private List<User> usersOnline;
 
     /**
      * Конструктор объекта клиента
@@ -41,11 +42,11 @@ public class ChatClient implements Runnable {
         new Thread(new Receiver()).start();// создаем и запускаем нить асинхронного чтения из сокета
     }
 
-    public ObservableList<User> getUsersOnline() {
+    public List<User> getUsersOnline() {
         return usersOnline;
     }
 
-    public void setUsersOnline(ObservableList<User> usersOnline) {
+    public void setUsersOnline(List<User> usersOnline) {
         this.usersOnline = usersOnline;
     }
 
@@ -80,6 +81,15 @@ public class ChatClient implements Runnable {
             close(); // в любой ошибке - закрываем.
         }
     }
+    public void sendSystemMessage(SystemMessage message) throws IOException {
+
+        try {
+            socketWriter.writeObject(message);
+            socketWriter.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * метод закрывает коннект и выходит из
@@ -104,6 +114,8 @@ public class ChatClient implements Runnable {
         }*/
     }
 
+
+
     /**
      * Вложенный приватный класс асинхронного чтения
      */
@@ -115,26 +127,18 @@ public class ChatClient implements Runnable {
          */
         public void run() {
             while (!s.isClosed()) { //сходу проверяем коннект.
-                Message line = null;
+                Object message = null;
+
                 try {
-                    line = (Message) socketReader.readObject(); // пробуем прочесть
-
-                }  catch (ClassNotFoundException e) {
+                    message = socketReader.readObject();
+                } catch (IOException | ClassNotFoundException e) {
                     e.printStackTrace();
-                    close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    System.out.println("asdasdasdasd");
                 }
-                if (line != null) {
-                    if (line.getMessage().equals("отключился.")) {  // строка будет null если сервер прикрыл коннект по своей инициативе, сеть работает
-                        listener.addMessage(new Message(new User("***SERVER: "),
-                                " пользователь ["+line.getUser().getLogin()+"] покинул чат."));
-
-                    } else { // иначе печатаем то, что прислал сервер.
-
-                        listener.addMessage(line);
-                    }
+                if (message instanceof Message){
+                    listener.addMessage((Message) message);
+                }
+                if(message instanceof SystemMessage){
+                    listener.addSystemMessage((SystemMessage) message);
                 }
             }
         }

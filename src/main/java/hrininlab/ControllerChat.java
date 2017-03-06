@@ -26,7 +26,7 @@ public class ControllerChat implements MessageListener{
     private static Statement stmt;
     private static ResultSet rs;
     private UserDao dao = new UserDao();
-    ObservableList<String> listusername = FXCollections.observableArrayList();
+
 
     @FXML
     private TableView<User> table_users;
@@ -48,6 +48,7 @@ public class ControllerChat implements MessageListener{
     Start start;
     ChatClient chatClient;
     Message message;
+    SystemMessage systemMessage;
     User polzovatel;
     ObservableList<User> usersOnlineList = FXCollections.observableArrayList();
 
@@ -62,12 +63,13 @@ public class ControllerChat implements MessageListener{
             }
         });
     }
+
     public void sendStartMessage(){
-        message = new Message(start.getUser(),"<============== подключен.");
+        systemMessage = new SystemMessage(start.getUser(),"<---подключен");
         Platform.runLater(() -> {
             try {
-                chatClient.SendMessage(message);
-            } catch (IOException e) {
+                chatClient.sendSystemMessage(systemMessage);
+            } catch (IOException e){
                 e.printStackTrace();
             }
         });
@@ -90,7 +92,7 @@ public class ControllerChat implements MessageListener{
         this.polzovatel = mainApp.getUser();
         start = mainApp;
         chatClient = new ChatClient("localhost", 45000, this, polzovatel);
-        usersOnlineList = chatClient.getUsersOnline();
+
         user.setText(polzovatel.getLogin());
         table_users.setItems(usersOnlineList);
         sendStartMessage();
@@ -105,9 +107,9 @@ public class ControllerChat implements MessageListener{
 
         start.getUser().setOnline(false);
         dao.update_User(start.getUser());
-        message = new Message(start.getUser(),"отключился.");
+        systemMessage = new SystemMessage(start.getUser(),"<---отключился");
         try {
-            chatClient.SendMessage(message);
+            chatClient.sendSystemMessage(systemMessage);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -133,9 +135,18 @@ public class ControllerChat implements MessageListener{
     public String getTextArea(){
         return textArea.getText();
     }
+
+    @Override
     public void addMessage(Message str){
         Platform.runLater(()->textArea.appendText(str.getUser().getLogin()+": "+str.getMessage()+"\n"));
 
+    }
+
+    @Override
+    public void addSystemMessage(SystemMessage message) {
+        Platform.runLater(()->textArea.appendText(message.getUser().getLogin()+": "+message.getMessage()+"\n"));
+
+        usersOnlineList.addAll(message.getUserList());
     }
 
 }

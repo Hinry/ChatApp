@@ -1,13 +1,18 @@
 package hrininlab;
 
+import hrininlab.DAO.UserDao;
 import hrininlab.Entity.User;
+import hrininlab.config.UsersOnlineListWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.springframework.security.access.method.P;
 
+import javax.jws.soap.SOAPBinding;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -20,6 +25,7 @@ public class ChatServer {
     private int port; // порт сервер сокета.
     //очередь, где храняться все SocketProcessorы для рассылки
     BlockingQueue<SocketProcessor> q = new LinkedBlockingQueue<SocketProcessor>();
+    List<User> userList = new ArrayList<>();
 
     /**
      * Конструктор объекта сервера
@@ -111,7 +117,8 @@ public class ChatServer {
         Socket s; // наш сокет
         ObjectInputStream br; // буферизировнный читатель сокета
         ObjectOutputStream bw; // буферизированный писатель в сокет
-        ObservableList<User> users_online = FXCollections.observableArrayList();
+
+
 
 
         /**
@@ -131,33 +138,43 @@ public class ChatServer {
          * Главный цикл чтения сообщений/рассылки
          */
         public void run() {
-            while (!s.isClosed()) { // пока сокет не закрыт...
-                Message line = null;
-                try {
-                    line = (Message)br.readObject(); // пробуем прочесть.
 
-                } catch (IOException e) {
-                    close(); // если не получилось - закрываем сокет.
-                } catch (ClassNotFoundException e) {
+            while (!s.isClosed()) { // пока сокет не закрыт...
+                Object message = null;
+
+                try {
+                    message = br.readObject();
+                } catch (IOException | ClassNotFoundException e) {
                     e.printStackTrace();
                 }
 
-                if (line.getMessage() == null) { // если строка null - клиент отключился в штатном режиме.
-                    close(); // то закрываем сокет
-                } else if ("shutdown".equals(line.getMessage())) { // если поступила команда "погасить сервер", то...
-                    serverThread.interrupt(); // сначала возводим флаг у северной нити о необходимости прерваться.
-                    try {
-                        new Socket("localhost", port); // создаем фейк-коннект (чтобы выйти из .accept())
-                    } catch (IOException ignored) { //ошибки неинтересны
-                    } finally {
-                        shutdownServer(); // а затем глушим сервер вызовом его метода shutdownServer().
-                    }
-                } else {// иначе - банальная рассылка по списку сокет-процессоров
-
-                    for (SocketProcessor sp:q) {
-                        sp.send(line);
+                if(message instanceof Message){
+                    if(((Message) message).getMessage() != null){
+                        for(SocketProcessor sp : q){
+                            sp.send((Message) message);
+                        }
+                    }else{
+                        for (SocketProcessor sp : q){
+                            sp.send(new Message(new User("SERVER"),"УПС"));
+                        }
                     }
 
+                }else if(message instanceof SystemMessage){
+                    if(((SystemMessage) message).getMessage().equals("<---подключен")){
+
+                        userList.add(((SystemMessage) message).getUser());
+                        ((SystemMessage) message).setUserList(userList);
+
+                        for(SocketProcessor sp : q){
+                            sp.sendSysMessage((SystemMessage) message);
+                        }
+                    }else if (((SystemMessage) message).getMessage().equals("<---отключился")){
+                        userList.remove(((SystemMessage) message).getUser());
+                        ((SystemMessage) message).setUserList(userList);
+                        for (SocketProcessor sp : q){
+                            sp.sendSysMessage((SystemMessage) message);
+                        }
+                    }
                 }
             }
         }
@@ -169,6 +186,16 @@ public class ChatServer {
         public synchronized void send(Message line) {
             try {
                 bw.writeObject(line);
+                // пишем строку
+                bw.flush();// пишем перевод строки
+                // отправляем
+            } catch (IOException e) {
+                close(); //если глюк в момент отправки - закрываем данный сокет.
+            }
+        }
+        public synchronized void sendSysMessage(SystemMessage message) {
+            try {
+                bw.writeObject(message);
                 // пишем строку
                 bw.flush();// пишем перевод строки
                 // отправляем

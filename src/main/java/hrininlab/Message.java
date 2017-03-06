@@ -6,6 +6,7 @@ import javafx.collections.ObservableList;
 
 import javax.jws.soap.SOAPBinding;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Created by mrhri on 03.03.2017.
@@ -14,13 +15,13 @@ public class Message implements Serializable {
 
     private User user;
     private String message;
-    private ObservableList<User> usersOnlineList;
+    private List<User> usersOnlineList;
 
     public Message(User user, String message) {
         this.user = user;
         this.message = message;
     }
-    public Message(User user, String message, ObservableList<User> list){
+    public Message(User user, String message, List<User> list){
         this.user = user;
         this.message = message;
         this.usersOnlineList = list;
@@ -45,11 +46,11 @@ public class Message implements Serializable {
         this.message = message;
     }
 
-    public ObservableList<User> getUsersOnlineList() {
+    public List<User> getUsersOnlineList() {
         return usersOnlineList;
     }
 
-    public void setUsersOnlineList(ObservableList<User> usersOnlineList) {
+    public void setUsersOnlineList(List<User> usersOnlineList) {
         this.usersOnlineList = usersOnlineList;
     }
 }

@@ -166,7 +166,7 @@ public class UserDao {
         return user;
     }
 
-    public ObservableList<User> getAllUsers() {
+    public List<User> getAllUsers() {
         List<User> users = new ArrayList<User>();
         Session session = HibernateUtil.getSessionFactory().openSession();
         try {
@@ -178,9 +178,8 @@ public class UserDao {
             session.flush();
             session.close();
         }
-        ObservableList<User> list = FXCollections.observableArrayList();
-        list.addAll(users);
-        return list;
+
+        return users;
     }
 
     public boolean isUserUnique(String login) {
