@@ -4,6 +4,8 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import org.hibernate.annotations.AccessType;
 import org.hibernate.annotations.IndexColumn;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.persistence.*;

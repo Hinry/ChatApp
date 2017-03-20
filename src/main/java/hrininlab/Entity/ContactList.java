@@ -80,14 +80,6 @@ public class ContactList implements Serializable{
         return getAllias() != null ? getAllias().equals(that.getAllias()) : that.getAllias() == null;
     }
 
-    @Override
-    public int hashCode() {
-        int result = getList_id();
-        result = 31 * result + (getOwner_id() != null ? getOwner_id().hashCode() : 0);
-        result = 31 * result + (getUser_id() != null ? getUser_id().hashCode() : 0);
-        result = 31 * result + (getAllias() != null ? getAllias().hashCode() : 0);
-        return result;
-    }
 
     @Override
     public String toString() {

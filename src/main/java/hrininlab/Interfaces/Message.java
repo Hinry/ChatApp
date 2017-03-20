@@ -1,10 +1,8 @@
-package hrininlab;
+package hrininlab.Interfaces;
 
-import com.sun.xml.internal.ws.developer.Serialization;
+
 import hrininlab.Entity.User;
-import javafx.collections.ObservableList;
 
-import javax.jws.soap.SOAPBinding;
 import java.io.Serializable;
 import java.util.List;
 
@@ -14,8 +12,10 @@ import java.util.List;
 public class Message implements Serializable {
 
     private User user;
+    private User userprivate;
     private String message;
     private List<User> usersOnlineList;
+
 
     public Message(User user, String message) {
         this.user = user;
@@ -53,4 +53,13 @@ public class Message implements Serializable {
     public void setUsersOnlineList(List<User> usersOnlineList) {
         this.usersOnlineList = usersOnlineList;
     }
+
+    public User getUserprivate() {
+        return userprivate;
+    }
+
+    public void setUserprivate(User userprivate) {
+        this.userprivate = userprivate;
+    }
+
 }

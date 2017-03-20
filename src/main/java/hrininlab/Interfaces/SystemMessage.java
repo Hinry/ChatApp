@@ -1,4 +1,4 @@
-package hrininlab;
+package hrininlab.Interfaces;
 
 import hrininlab.Entity.User;
 
@@ -43,4 +43,5 @@ public class SystemMessage implements Serializable{
     public void setUserList(List<User> userList) {
         this.userList = userList;
     }
+
 }

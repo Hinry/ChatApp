@@ -16,6 +16,7 @@ import hrininlab.Entity.UserRole;
 
 import javax.sound.midi.Soundbank;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -27,60 +28,6 @@ public class UserDao {
     public UserDao() {
     }
 
-    public void add_User(User user){
-
-        Transaction transaction = null;
-        Session session = HibernateUtil.getSessionFactory().openSession();
-        try {
-            transaction = session.beginTransaction();
-            session.save(user);
-            session.getTransaction().commit();
-        } catch (RuntimeException e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            e.printStackTrace();
-        } finally {
-            session.flush();
-            session.close();
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<UserRole> findAll(){
-        Session session = HibernateUtil.getSessionFactory().openSession();
-
-        Criteria crit = session.createCriteria(UserRole.class);
-        crit.addOrder(Order.asc("type"));
-        return (List<UserRole>)crit.list();
-    }
-
-    @SuppressWarnings("unchecked")
-    public UserRole findById(int id) {
-        Session session = HibernateUtil.getSessionFactory().openSession();
-        UserRole role =  (UserRole) session.load(UserRole.class, id);
-
-        return role;
-    }
-
-    public void delete_User(int user_id) {
-        Transaction transaction = null;
-        Session session = HibernateUtil.getSessionFactory().openSession();
-        try {
-            transaction = session.beginTransaction();
-            User user = (User) session.load(User.class, user_id);
-            session.delete(user);
-            session.getTransaction().commit();
-        } catch (RuntimeException e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            e.printStackTrace();
-        } finally {
-            session.flush();
-            session.close();
-        }
-    }
     public void update_User(User user){
 
         Transaction transaction = null;
@@ -101,51 +48,91 @@ public class UserDao {
         }
     }
 
-    public void add_contact_to_User(int user_id, int contact_id){
+    public boolean add_contact_to_User(User user1, User contact){
 
         Transaction transaction = null;
         Session session = HibernateUtil.getSessionFactory().openSession();
+        ContactList contactList = null;
+        User user = null;
         try {
+
             transaction = session.beginTransaction();
             //ВЫТЯГИВАЕМ ЮЗЕРА
-            User user = (User) session.load(User.class, user_id);
-            User contact = (User) session.load(User.class, contact_id);
-            ContactList list = new ContactList();
-            list.setUser_id(contact);
 
-            user.getContactList().add(list);
-            session.update(user);
-            session.beginTransaction().commit();
+            user = (User) session.load(User.class, user1.getId());
+
+
+            String queryString2 = "from ContactList where owner_id = :id1 and user_id = :id2";
+            Query query2 = session.createQuery(queryString2);
+            query2.setInteger("id1", user1.getId());
+            query2.setInteger("id2", contact.getId());
+            contactList = (ContactList) query2.uniqueResult();
+            if(contactList!=null){
+                return false;
+            }else {
+                ContactList list = new ContactList();
+                list.setUser_id(contact);
+                user.getContactList().add(list);
+                session.beginTransaction().commit();
+                session.clear();
+                return true;
+            }
+
+
         }catch (RuntimeException ex){
             if (transaction != null){
                 transaction.rollback();
             }
             ex.printStackTrace();
+            return false;
         }finally {
             session.flush();
             session.close();
         }
+
     }
 
-    public User get_user_by_id(int userid) {
-
-        User user = null;
-        Transaction trns = null;
+    public boolean deleteUserFromContactList(User user1, User user2){
+        Transaction transaction = null;
         Session session = HibernateUtil.getSessionFactory().openSession();
-        try {
-            trns = session.beginTransaction();
+        ContactList contactList = null;
+        User user = null;
+        try{
+            transaction = session.beginTransaction();
             String queryString = "from User where id = :id";
             Query query = session.createQuery(queryString);
-            query.setInteger("id", userid);
+            query.setInteger("id", user1.getId());
             user = (User) query.uniqueResult();
-        } catch (RuntimeException e) {
-            e.printStackTrace();
-        } finally {
+
+            String queryString2 = "from ContactList where owner_id = :id1 and user_id = :id2";
+            Query query2 = session.createQuery(queryString2);
+            query2.setInteger("id1", user1.getId());
+            query2.setInteger("id2", user2.getId());
+            contactList = (ContactList) query2.uniqueResult();
+
+            if(contactList!=null){
+                user.getContactList().remove(contactList);
+                session.delete(contactList);
+                session.getTransaction().commit();
+                session.clear();
+                return true;
+            }else {
+                return false;
+            }
+
+        }catch (RuntimeException ex){
+            if (transaction != null){
+                transaction.rollback();
+            }
+            ex.printStackTrace();
+            return false;
+        }finally {
             session.flush();
+            session.clear();
             session.close();
         }
-        return user;
     }
+
 
     public User get_user_by_login(String login) {
 
@@ -166,7 +153,7 @@ public class UserDao {
         return user;
     }
 
-    public List<User> getAllUsers() {
+    public List<User> getUsersOnline() {
         List<User> users = new ArrayList<User>();
         Session session = HibernateUtil.getSessionFactory().openSession();
         try {
@@ -182,18 +169,8 @@ public class UserDao {
         return users;
     }
 
-    public boolean isUserUnique(String login) {
-        User user = get_user_by_login(login);
-        return (user == null);
-    }
 
     public static void main(String[] args){
 
-        UserDao dao = new UserDao();
-        User user = dao.get_user_by_login("admin");
-
-        user.setOnline(true);
-
-        dao.update_User(user);
     }
 }
