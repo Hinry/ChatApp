@@ -4,10 +4,7 @@ import hrininlab.*;
 import hrininlab.Client.ChatClient;
 import hrininlab.DAO.UserDao;
 import hrininlab.Entity.User;
-import hrininlab.Interfaces.Message;
-import hrininlab.Interfaces.MessageListener;
-import hrininlab.Interfaces.SystemMessage;
-import hrininlab.Interfaces.SystemRequestMessage;
+import hrininlab.Interfaces.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -190,7 +187,8 @@ public class ControllerChat implements MessageListener {
     /**
      * показать таблицу с контактами
      */
-    @FXML void showContacts(){
+    @FXML
+    void showContacts(){
         tableContacts.refresh();
         btnInNetwork.setStyle("-fx-background-color: #1d1d1d; -fx-background-radius: 0px");
         btnShowContacts.setStyle("-fx-background-color: #3d3d3d; -fx-background-radius: 0px");

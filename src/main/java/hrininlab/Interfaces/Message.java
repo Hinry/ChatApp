@@ -21,11 +21,6 @@ public class Message implements Serializable {
         this.user = user;
         this.message = message;
     }
-    public Message(User user, String message, List<User> list){
-        this.user = user;
-        this.message = message;
-        this.usersOnlineList = list;
-    }
 
     public Message() {
     }

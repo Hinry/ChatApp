@@ -1,13 +1,11 @@
 package hrininlab.Client;
 
 import hrininlab.Entity.User;
-import hrininlab.Interfaces.Message;
-import hrininlab.Interfaces.MessageListener;
-import hrininlab.Interfaces.SystemMessage;
-import hrininlab.Interfaces.SystemRequestMessage;
+import hrininlab.Interfaces.*;
 
 import java.net.Socket;
 import java.io.*;
+import java.sql.SQLException;
 
 /**
  * Класс-клиент чат-сервера. Работает в консоли. Командой с консоли shutdown посылаем сервер в оффлайн
@@ -18,6 +16,7 @@ public class ChatClient  {
     final ObjectOutputStream socketWriter; // буферизированный писатель на сервер
 
     MessageListener listener;
+    LoginRequestListener loginRequestListener;
 
     /**
      * Конструктор объекта клиента
@@ -31,6 +30,17 @@ public class ChatClient  {
     public ChatClient(String host, int port, MessageListener listener) throws IOException {
 
         this.listener = listener;
+        socket = new Socket(host, port);
+
+        socketWriter = new ObjectOutputStream(socket.getOutputStream());
+        socketReader = new ObjectInputStream((socket.getInputStream()));
+
+        // создаем читателя с клиента приложения
+        new Thread(new Receiver()).start(); // создаем и запускаем нить асинхронного чтения из сокета
+    }
+    public ChatClient(String host, int port, LoginRequestListener listener) throws IOException {
+
+        this.loginRequestListener = listener;
         socket = new Socket(host, port);
 
         socketWriter = new ObjectOutputStream(socket.getOutputStream());
@@ -54,6 +64,14 @@ public class ChatClient  {
             e.printStackTrace();
             close();
         }
+    }
+
+    /**
+     * отправить запрос на логирование
+     * @param request
+     */
+    public void sendLoginRequest(LoginRequest request){
+        send(request);
     }
 
     /**
@@ -111,7 +129,6 @@ public class ChatClient  {
      */
     private class Receiver implements Runnable{
 
-
         /**
          * run() вызовется после создания экземпляра класа ChatClient из его конструктора.
          */
@@ -134,6 +151,13 @@ public class ChatClient  {
                 }
                 if(message instanceof  SystemRequestMessage){
                     listener.addSystemRequestMessage((SystemRequestMessage) message);
+                }
+                if (message instanceof LoginRequest){
+                    try {
+                        loginRequestListener.addLoginRequest((LoginRequest) message);
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }

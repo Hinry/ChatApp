@@ -4,6 +4,7 @@ package hrininlab.Server;
 import hrininlab.DAO.UserDao;
 import hrininlab.Entity.ContactList;
 import hrininlab.Entity.User;
+import hrininlab.Interfaces.LoginRequest;
 import hrininlab.Interfaces.Message;
 import hrininlab.Interfaces.SystemMessage;
 import hrininlab.Interfaces.SystemRequestMessage;
@@ -55,7 +56,6 @@ public class ChatServer {
                     final Thread thread = new Thread(processor);
                     thread.setDaemon(true);
                     thread.start();
-
                 }
                 catch (IOException ignored) {}
             }
@@ -99,7 +99,6 @@ public class ChatServer {
     public static void main(String[] args) throws IOException {
         new ChatServer(45000).run(); // если сервер не создался, программа
         // вылетит по эксепшену, и метод run() не запуститься
-
     }
 
     /**
@@ -147,133 +146,161 @@ public class ChatServer {
 
                 if(message instanceof Message){
 
-                    if(((Message) message).getMessage() != null){
-                        if(((Message) message).getUserprivate() != null){
-                            for(SocketProcessor sp : q) {
-                                if (sp.getUser().getLogin().equals(((Message) message).getUserprivate().getLogin()) || sp.getUser().getLogin().equals(((Message) message).getUser().getLogin())) {
-                                    sp.sendMessage((Message) message);
-                                }
-                            }
-                        }else {
-                            for (SocketProcessor sp : q){
-                                sp.sendMessage((Message) message);
-                            }
-                        }
-                    }else{
-                        for (SocketProcessor sp : q){
-                            sp.sendMessage(new Message(new User("SERVER"),"УПС"));
-                        }
-                    }
+                    readAndWriteMessage((Message) message);
 
                 }
                 if(message instanceof SystemMessage){
-                    if(((SystemMessage) message).getMessage().equals("<---подключен")){
-
-                        ((SystemMessage) message).getUser().setOnline(true);
-                        dao.update_User(((SystemMessage) message).getUser());
-
-                        userList.add(((SystemMessage) message).getUser());
-                        ((SystemMessage) message).setUserList(userList);
-                        this.user = ((SystemMessage) message).getUser();
-                        q.add(this);
-                        for(SocketProcessor sp : q){
-                            sp.sendSysMessage((SystemMessage) message);
-                            System.out.println(sp.getUser().getFirst_name());
+                    readAndWriteSystemMessage((SystemMessage) message);
+                }
+                if(message instanceof SystemRequestMessage){
+                    readAndWriteSystemRequestMessage((SystemRequestMessage) message);
+                }
+                if(message instanceof LoginRequest){
+                    User user = dao.get_user_by_login(((LoginRequest) message).getLogin());
+                    if(user != null){
+                        if(user.getPassword().equals(((LoginRequest) message).getPassword())){
+                            ((LoginRequest) message).setUser(user);
+                            this.sendLoginRequest((LoginRequest) message);
+                            this.close();
+                        }else {
+                            ((LoginRequest) message).setMessage("Пароль не верный");
+                            this.sendLoginRequest((LoginRequest) message);
                         }
+                    }else {
+                        ((LoginRequest) message).setMessage("Такого пользователя не существует");
+                        this.sendLoginRequest((LoginRequest) message);
+                    }
+                }
+            }
+        }
 
-                    }else if (((SystemMessage) message).getMessage().equals("<---отключился")){
-                        ((SystemMessage) message).getUser().setOnline(false);
-                        dao.update_User(((SystemMessage) message).getUser());
-                        userList.remove(((SystemMessage) message).getUser());
-                        ((SystemMessage) message).setUserList(userList);
-                        this.close();
-                        for (SocketProcessor sp : q){
-                            sp.sendSysMessage((SystemMessage) message);
+        public void readAndWriteMessage(Message message){
+            if(message.getMessage() != null){
+                if(message.getUserprivate() != null){
+                    for(SocketProcessor sp : q) {
+                        if (sp.getUser().getLogin().equals(message.getUserprivate().getLogin())) {
+                            sp.sendMessage(message);
+                        } else if (sp.getUser().getLogin().equals(message.getUser().getLogin())) {
+                            sp.sendMessage(message);
+                        }
+                    }
+                }else {
+                    for (SocketProcessor sp : q){
+                        sp.sendMessage(message);
+                    }
+                }
+            }else{
+                for (SocketProcessor sp : q){
+                    sp.sendMessage(new Message(new User("SERVER"),"УПС"));
+                }
+            }
+        }
+
+        void readAndWriteSystemMessage(SystemMessage message){
+            if(message.getMessage().equals("<---подключен")){
+
+                message.getUser().setOnline(true);
+                dao.update_User(message.getUser());
+
+                userList.add(message.getUser());
+                message.setUserList(userList);
+                this.user = message.getUser();
+                q.add(this);
+                for(SocketProcessor sp : q){
+                    sp.sendSysMessage(message);
+                    System.out.println(sp.getUser().getFirst_name());
+                }
+
+            }else if (message.getMessage().equals("<---отключился")){
+                message.getUser().setOnline(false);
+                dao.update_User(message.getUser());
+                userList.remove(message.getUser());
+                message.setUserList(userList);
+                this.close();
+                for (SocketProcessor sp : q){
+                    sp.sendSysMessage(message);
+                }
+            }
+        }
+
+        void readAndWriteSystemRequestMessage(SystemRequestMessage message){
+            if(message.getMessage().equals("добавить")){
+
+
+                if(dao.add_contact_to_User(message.getUser(), message.getUser2())){
+                    message.setMessage("Добавлен");
+                    List<User> list = new ArrayList<>();
+                    User user = dao.get_user_by_login(message.getUser().getLogin());
+                    for(ContactList e : user.getContactList()){
+                        list.add(e.getUser_id());
+                    }
+                    message.setUserlist(list);
+
+                    for(SocketProcessor sp : q){
+                        if(sp.getUser().getLogin().equals(message.getUser().getLogin())){
+                            sp.sendSysReqMessage(message);
+                        }
+                    }
+                }else {
+                    message.setMessage("Уже добавлен");
+                    List<User> list = new ArrayList<>();
+
+                    User user = dao.get_user_by_login(message.getUser().getLogin());
+                    for(ContactList e : user.getContactList()){
+                        list.add(e.getUser_id());
+                    }
+                    message.setUserlist(list);
+                    for(SocketProcessor sp : q){
+                        if(sp.getUser().getLogin().equals(message.getUser().getLogin())){
+                            sp.sendSysReqMessage(message);
                         }
                     }
                 }
-                if(message instanceof SystemRequestMessage){
-                    if(((SystemRequestMessage) message).getMessage().equals("добавить")){
+            }
+            if(message.getMessage().equals("удалить")){
 
+                if(dao.deleteUserFromContactList(message.getUser(), message.getUser2())){
+                    message.setMessage("Удалён");
+                    User user = dao.get_user_by_login(message.getUser().getLogin());
+                    List<User> list = new ArrayList<>();
+                    for(ContactList e : user.getContactList()){
+                        list.add(e.getUser_id());
+                    }
+                    message.setUserlist(list);
 
-                        if(dao.add_contact_to_User(((SystemRequestMessage) message).getUser(),((SystemRequestMessage) message).getUser2())){
-                            ((SystemRequestMessage) message).setMessage("Добавлен");
-                            List<User> list = new ArrayList<>();
-                            User user = dao.get_user_by_login(((SystemRequestMessage) message).getUser().getLogin());
-                            for(ContactList e : user.getContactList()){
-                                list.add(e.getUser_id());
-                            }
-                            ((SystemRequestMessage) message).setUserlist(list);
-
-                            for(SocketProcessor sp : q){
-                                if(sp.getUser().getLogin().equals(((SystemRequestMessage) message).getUser().getLogin())){
-                                    sp.sendSysReqMessage((SystemRequestMessage) message);
-                                }
-                            }
-                        }else {
-                            ((SystemRequestMessage) message).setMessage("Уже добавлен");
-                            List<User> list = new ArrayList<>();
-
-                            User user = dao.get_user_by_login(((SystemRequestMessage) message).getUser().getLogin());
-                            for(ContactList e : user.getContactList()){
-                                list.add(e.getUser_id());
-                            }
-                            ((SystemRequestMessage) message).setUserlist(list);
-                            for(SocketProcessor sp : q){
-                                if(sp.getUser().getLogin().equals(((SystemRequestMessage) message).getUser().getLogin())){
-                                    sp.sendSysReqMessage((SystemRequestMessage) message);
-                                }
-                            }
+                    for(SocketProcessor sp : q){
+                        if(sp.getUser().getLogin().equals(message.getUser().getLogin())){
+                            sp.sendSysReqMessage(message);
                         }
                     }
-                    if(((SystemRequestMessage) message).getMessage().equals("удалить")){
-
-                        if(dao.deleteUserFromContactList(((SystemRequestMessage) message).getUser(),((SystemRequestMessage) message).getUser2())){
-                            ((SystemRequestMessage) message).setMessage("Удалён");
-                            User user = dao.get_user_by_login(((SystemRequestMessage) message).getUser().getLogin());
-                            List<User> list = new ArrayList<>();
-                            for(ContactList e : user.getContactList()){
-                                list.add(e.getUser_id());
-                            }
-                            ((SystemRequestMessage) message).setUserlist(list);
-
-                            for(SocketProcessor sp : q){
-                                if(sp.getUser().getLogin().equals(((SystemRequestMessage) message).getUser().getLogin())){
-                                    sp.sendSysReqMessage((SystemRequestMessage) message);
-                                }
-                            }
-                        }else {
-                            ((SystemRequestMessage) message).setMessage("Уже удалён");
-                            List<User> list = new ArrayList<>();
-                            User user = dao.get_user_by_login(((SystemRequestMessage) message).getUser().getLogin());
-                            for(ContactList e : user.getContactList()){
-                                list.add(e.getUser_id());
-                            }
-                            ((SystemRequestMessage) message).setUserlist(list);
-                            for(SocketProcessor sp : q){
-                                if(sp.getUser().getLogin().equals(((SystemRequestMessage) message).getUser().getLogin())){
-                                    sp.sendSysReqMessage((SystemRequestMessage) message);
-                                }
-                            }
-                        }
-
-
+                }else {
+                    message.setMessage("Уже удалён");
+                    List<User> list = new ArrayList<>();
+                    User user = dao.get_user_by_login(message.getUser().getLogin());
+                    for(ContactList e : user.getContactList()){
+                        list.add(e.getUser_id());
                     }
-                    if (((SystemRequestMessage) message).getMessage().equals("start")){
-                        List<User> list = new ArrayList<>();
-                        for(ContactList e : ((SystemRequestMessage) message).getUser().getContactList()){
-                            list.add(e.getUser_id());
-                        }
-                        ((SystemRequestMessage) message).setUserlist(list);
-                        ((SystemRequestMessage) message).setMessage(" ");
-                        for(SocketProcessor sp : q){
-                            if(sp.getUser().getLogin().equals(((SystemRequestMessage) message).getUser().getLogin())){
-                                sp.sendSysReqMessage((SystemRequestMessage) message);
-                            }
+                    message.setUserlist(list);
+                    for(SocketProcessor sp : q){
+                        if(sp.getUser().getLogin().equals(message.getUser().getLogin())){
+                            sp.sendSysReqMessage(message);
                         }
                     }
+                }
 
 
+            }
+            if (message.getMessage().equals("start")){
+                List<User> list = new ArrayList<>();
+                for(ContactList e : message.getUser().getContactList()){
+                    list.add(e.getUser_id());
+                }
+                message.setUserlist(list);
+                message.setMessage(" ");
+                for(SocketProcessor sp : q){
+                    if(sp.getUser().getLogin().equals(message.getUser().getLogin())){
+                        sp.sendSysReqMessage(message);
+                    }
                 }
             }
         }
@@ -303,6 +330,9 @@ public class ChatServer {
         }
         private synchronized void sendSysReqMessage(SystemRequestMessage message) {
             send(message);
+        }
+        public synchronized void sendLoginRequest(LoginRequest request){
+            send(request);
         }
 
         /**
