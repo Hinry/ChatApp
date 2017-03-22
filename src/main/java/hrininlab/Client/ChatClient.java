@@ -1,7 +1,7 @@
 package hrininlab.Client;
 
-import hrininlab.Entity.User;
 import hrininlab.Interfaces.*;
+import hrininlab.Messengers.*;
 
 import java.net.Socket;
 import java.io.*;
@@ -17,6 +17,7 @@ public class ChatClient  {
 
     MessageListener listener;
     LoginRequestListener loginRequestListener;
+    SearchListener searchListener;
 
     /**
      * Конструктор объекта клиента
@@ -30,6 +31,19 @@ public class ChatClient  {
     public ChatClient(String host, int port, MessageListener listener) throws IOException {
 
         this.listener = listener;
+        this.searchListener = searchListener;
+        socket = new Socket(host, port);
+
+        socketWriter = new ObjectOutputStream(socket.getOutputStream());
+        socketReader = new ObjectInputStream((socket.getInputStream()));
+
+        // создаем читателя с клиента приложения
+        new Thread(new Receiver()).start(); // создаем и запускаем нить асинхронного чтения из сокета
+    }
+    public ChatClient(String host, int port, SearchListener searchListener) throws IOException {
+
+        this.listener = listener;
+        this.searchListener = searchListener;
         socket = new Socket(host, port);
 
         socketWriter = new ObjectOutputStream(socket.getOutputStream());
@@ -90,6 +104,10 @@ public class ChatClient  {
      */
     public void sendSystemMessage(SystemMessage message) throws IOException {
         send(message);
+    }
+
+    public void sendSearchRequest(SearchRequest request){
+        send(request);
     }
 
     /**
@@ -158,6 +176,9 @@ public class ChatClient  {
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
+                }
+                if(message instanceof  SearchRequest){
+                    searchListener.add((SearchRequest) message);
                 }
             }
         }

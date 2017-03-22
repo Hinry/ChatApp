@@ -153,6 +153,44 @@ public class UserDao {
         return user;
     }
 
+    public User get_user_by_name(String name) {
+
+        User user = null;
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        try {
+            session.beginTransaction();
+            String queryString = "from User where first_name = :login";
+            Query query = session.createQuery(queryString);
+            query.setString("login", name);
+            user = (User) query.uniqueResult();
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+        } finally {
+            session.flush();
+            session.close();
+        }
+        return user;
+    }
+
+    public User getUserByLastName(String lastName) {
+
+        User user = null;
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        try {
+            session.beginTransaction();
+            String queryString = "from User where last_name = :login";
+            Query query = session.createQuery(queryString);
+            query.setString("login", lastName);
+            user = (User) query.uniqueResult();
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+        } finally {
+            session.flush();
+            session.close();
+        }
+        return user;
+    }
+
     public List<User> getUsersOnline() {
         List<User> users = new ArrayList<User>();
         Session session = HibernateUtil.getSessionFactory().openSession();

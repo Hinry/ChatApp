@@ -1,9 +1,8 @@
 package hrininlab.Controllers;
 
 import hrininlab.Client.ChatClient;
-import hrininlab.DAO.UserDao;
-import hrininlab.Entity.User;
 import hrininlab.Interfaces.*;
+import hrininlab.Messengers.LoginRequest;
 import hrininlab.Start;
 import javafx.application.Platform;
 import javafx.fxml.FXML;

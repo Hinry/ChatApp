@@ -4,16 +4,12 @@ package hrininlab.Server;
 import hrininlab.DAO.UserDao;
 import hrininlab.Entity.ContactList;
 import hrininlab.Entity.User;
-import hrininlab.Interfaces.LoginRequest;
-import hrininlab.Interfaces.Message;
-import hrininlab.Interfaces.SystemMessage;
-import hrininlab.Interfaces.SystemRequestMessage;
+import hrininlab.Messengers.*;
 
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -29,6 +25,7 @@ public class ChatServer {
     //очередь, где храняться все SocketProcessorы для рассылки
     BlockingQueue<SocketProcessor> q = new LinkedBlockingQueue<SocketProcessor>();
     private LinkedList<User> userList = new LinkedList<>();
+    private LinkedList<User> userListSearch = new LinkedList<>();
     private UserDao dao = new UserDao();
 
     /**
@@ -170,6 +167,49 @@ public class ChatServer {
                         ((LoginRequest) message).setMessage("Такого пользователя не существует");
                         this.sendLoginRequest((LoginRequest) message);
                     }
+                }
+                if(message instanceof SearchRequest){
+
+                    userListSearch.clear();
+                    if(((SearchRequest) message).getLogin() != null){
+                        User user = dao.get_user_by_login(((SearchRequest) message).getLogin());
+                        if(user != null){
+                            userListSearch.add(user);
+                        }
+
+                    }
+                    if(((SearchRequest) message).getName() != null){
+                        User user2 = dao.get_user_by_name(((SearchRequest) message).getName());
+                        if(user2 != null){
+                            if(userListSearch.size() == 0){
+                                userListSearch.add(user2);
+                            }else {
+                                if(!userListSearch.getLast().equals(user2)){
+                                    userListSearch.add(user2);
+                                }
+                            }
+
+                        }
+                    }
+                    if(((SearchRequest) message).getLastName() != null){
+                        User user3 = dao.getUserByLastName(((SearchRequest) message).getLastName());
+                        if(user3 != null){
+                            if(userListSearch.size() == 0){
+                                userListSearch.add(user3);
+                            }else {
+                                if(!userListSearch.getLast().equals(user3)){
+                                    userListSearch.add(user3);
+                                }
+                            }
+
+
+                        }
+                    }
+                    ((SearchRequest) message).setUserlist(userListSearch);
+
+                    this.sendSearchRequest((SearchRequest) message);
+                    this.close();
+                    userListSearch.clear();
                 }
             }
         }
@@ -332,6 +372,9 @@ public class ChatServer {
             send(message);
         }
         public synchronized void sendLoginRequest(LoginRequest request){
+            send(request);
+        }
+        public synchronized void sendSearchRequest(SearchRequest request){
             send(request);
         }
 

@@ -30,11 +30,11 @@
 }
 
 .table-view .column-header .label {
-    -fx-font-size: 15pt;
+    -fx-font-size: 12pt;
     -fx-font-family: "Segoe UI Light";
     -fx-alignment: center-left;
     -fx-opacity: 1;
-    -fx-text-fill: #517cba;
+    -fx-text-fill: white;
 }
 
 .table-view:focused .table-row-cell:filled:focused:selected {

@@ -33,6 +33,14 @@ public class Start extends Application {
 
     }
 
+    public Stage getPrimaryStage() {
+        return primaryStage;
+    }
+
+    public void setPrimaryStage(Stage primaryStage) {
+        this.primaryStage = primaryStage;
+    }
+
     public User getUser() {
         return user;
     }

@@ -116,6 +116,12 @@ public class User implements Serializable{
     public StringProperty getPropertyLogin(){
         return new SimpleStringProperty(this.login);
     }
+    public StringProperty getPropertyName(){
+        return new SimpleStringProperty(this.first_name);
+    }
+    public StringProperty getPropertyLastName(){
+        return new SimpleStringProperty(this.last_name);
+    }
 
 
     public String getFirst_name() {

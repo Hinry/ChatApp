@@ -1,4 +1,4 @@
-package hrininlab.Interfaces;
+package hrininlab.Messengers;
 
 
 import hrininlab.Entity.User;

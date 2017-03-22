@@ -1,5 +1,7 @@
 package hrininlab.Interfaces;
 
+import hrininlab.Messengers.LoginRequest;
+
 import java.sql.SQLException;
 
 /**

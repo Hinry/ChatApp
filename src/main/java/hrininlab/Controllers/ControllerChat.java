@@ -2,15 +2,22 @@ package hrininlab.Controllers;
 
 import hrininlab.*;
 import hrininlab.Client.ChatClient;
-import hrininlab.DAO.UserDao;
 import hrininlab.Entity.User;
 import hrininlab.Interfaces.*;
+import hrininlab.Messengers.Message;
+import hrininlab.Messengers.SearchRequest;
+import hrininlab.Messengers.SystemMessage;
+import hrininlab.Messengers.SystemRequestMessage;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.AnchorPane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -73,7 +80,6 @@ public class ControllerChat implements MessageListener {
         this.user = mainApp.getUser();
         start = mainApp;
         chatClient = new ChatClient("localhost", 45000, this);
-
         userLabel.setText(user.getLogin());
         table_users.setItems(usersOnlineList);
         tableContacts.setItems(usersContactList);
@@ -129,6 +135,19 @@ public class ControllerChat implements MessageListener {
         requestMessage = new SystemRequestMessage();
         requestMessage.setUser(user);
         requestMessage.setUser2(table_users.getSelectionModel().selectedItemProperty().get());
+        requestMessage.setMessage("добавить");
+        Platform.runLater(() -> {
+            try {
+                chatClient.sendSystemRequestMessage(requestMessage);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+    public void addUsersToContactFromSearch(User user, User user2){
+        requestMessage = new SystemRequestMessage();
+        requestMessage.setUser(user);
+        requestMessage.setUser2(user2);
         requestMessage.setMessage("добавить");
         Platform.runLater(() -> {
             try {
@@ -258,6 +277,39 @@ public class ControllerChat implements MessageListener {
             labelFIO.setText(user.getFirst_name()+" "+user.getLast_name());
             error.setText(" ");
         }
+    }
+
+    /**
+     * октрыть окно поиска
+     */
+    @FXML
+    public void openSearchWindow(){
+
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Start.class.getResource("/fxml/Search.fxml"));
+            AnchorPane page = (AnchorPane) loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Поиск пользователей");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(start.getPrimaryStage());
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            ControllerSearchWindow controller = loader.getController();
+            controller.setDialogStage(dialogStage);
+            controller.setControllerChat(this);
+            controller.setUser(user);
+
+            dialogStage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public boolean isAddContact(){
+        return error.getText().equals("Добавлен");
     }
 
     @FXML
